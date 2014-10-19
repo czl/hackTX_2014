@@ -24,6 +24,7 @@ const unsigned int map_0[] = {0,1,0,0,1,0,1,1,1,0,0,1,0,1,1,1,0,0,0,0,0,0,0,0,0,
 const unsigned int map_1[] = {1,0,1,1,0,1,1,1,0,1,1,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 unsigned int ptr0 = 0;
 unsigned int ptr1 = 0;
+unsigned int ptr_max = 16; //when pointer gets to index 15 we know that is the last part of map
 
 void map_display();//const unsigned int& map0, const unsigned int& map1, unsigned int& p0, unsigned int& p1);
 
@@ -58,12 +59,12 @@ void map_display()//const unsigned int& map0, const unsigned int& map1, unsigned
   for(;i<16;++i)
   {
     lcd.setCursor(i,0);
-    if(map_0[i])
+    if(map_0[i+ptr0])
       lcd.print("X"); 
     else
       lcd.print(" ");
     lcd.setCursor(i,1);
-    if(map_1[i])
+    if(map_1[i+ptr1])
       lcd.print("X");
     else
       lcd.print(" ");
@@ -72,7 +73,22 @@ void map_display()//const unsigned int& map0, const unsigned int& map1, unsigned
 
 void loop() 
 {
-    
+  while(ptr0<ptr_max)
+  { 
+   delay(700);
+    ++ptr0;
+    ++ptr1;
+    map_display();
+  }
+  if(ptr0>=ptr_max)
+  {
+    lcd.setCursor(0,0);
+    lcd.print(blank_writer);
+    lcd.print(blank_writer);
+    lcd.setCursor(0,0);
+    lcd.print("DONE! GAME OVER");
+    while(true){}
+  }
 }
 
 /*********************************************************************************************************
