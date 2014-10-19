@@ -136,23 +136,48 @@ boolean correct_press()
    return (user0==val0 && user1==val1);
 }
 
-void start_delay_beep(int delay_time)
+void delay_beep(int delay_time, int tone1, int tone2)
   {
    if(start_delay)
    {
       for(int i = 0; i < 3; i++)
       {
         delay(delay_time);
-        tone(buzz_pin, 1900, 200);
+        tone(buzz_pin, tone1, 200);
       }
       delay(delay_time);
-      tone(buzz_pin, 3000, 200);
+      tone(buzz_pin, tone2, 200);
     }
+}
+
+void win_lvl()
+{
+  tone(buzz_pin, 1000, 300);
+  tone(buzz_pin, 1500, 300);
+  tone(buzz_pin, 3000, 400);
+}
+
+void win_all()
+{
+  tone(buzz_pin, 1500, 200);
+  tone(buzz_pin, 1500, 200);
+  tone(buzz_pin, 1500, 200);
+  tone(buzz_pin, 1500, 200);
+  tone(buzz_pin, 3000, 500);
+}
+
+void lose()
+{
+  tone(buzz_pin, 1500, 200);
+  tone(buzz_pin, 1000, 200);
+  tone(buzz_pin, 700, 200);
+  tone(buzz_pin, 500, 400);
 }
 
 void our_loop()
 {
-  start_delay_beep(400);
+  lcd.setRGB(100,100,100);
+  delay_beep(400, 1900, 3000);
   ++loop_count;
   button_state = digitalRead(button_pin);
   touch_state = digitalRead(touch_pin);
@@ -190,6 +215,11 @@ void our_loop()
   
   if(ptr0>=ptr_max)//won this level!
   {
+    if(level <= max_level)
+    {
+      win_lvl();
+      lcd.setRGB(0,0,255);
+    }
     clear_screen();
     lcd.setCursor(0,0);
     lcd.print("DONE! YOU WON!!");
@@ -204,6 +234,7 @@ void our_loop()
     ptr1 = 0;
     if(level > max_level)//you beat the game
     {
+       win_all();
        while(true)
        {
          clear_screen();
@@ -218,7 +249,7 @@ void our_loop()
          delay(1000);
          clear_screen();
          lcd.setCursor(0,0);
-         lcd.print("press button");
+         lcd.print("hold button");
          lcd.setCursor(0,1);
          lcd.print("to play again");
          if(digitalRead(button_pin) || digitalRead(touch_pin))
@@ -254,6 +285,7 @@ void our_loop()
   else if(loop_count>=rxn_time[level] && !good)//lost
   {
     lcd.setRGB(200,0,0);//red bg
+    lose();
     while(true)
     {
       clear_screen();
