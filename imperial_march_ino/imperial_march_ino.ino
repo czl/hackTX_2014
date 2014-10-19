@@ -104,7 +104,7 @@
 #define	D8	4698.64
 #define	Eb8	4978.03
 // DURATION OF THE NOTES 
-#define BPM 120    //  you can change this value changing all the others
+#define BPM 280    //  you can change this value changing all the others
 #define H 2*Q //half 2/4
 #define Q 60000/BPM //quarter 1/4 
 #define E Q/2   //eighth 1/8
