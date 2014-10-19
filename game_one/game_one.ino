@@ -14,7 +14,8 @@ const int touch_pin = 4;
 const int buzz_pin = 8;
 const char blank_writer[17] = "                ";
 int level = 0;
-const int rxn_time[6] = {30, 29, 27, 24, 19};//time to react, decreases as levels go up
+int max_level = 5;
+const int rxn_time[6] = {30, 29, 27, 24, 19, 13};//time to react, decreases as levels go up
 
 int button_state = 0;
 int touch_state = 0;
@@ -38,7 +39,31 @@ boolean start_delay = true;
 
 boolean correct_press();//checks to see if the user pressed the correct buttons
 void map_display();//const unsigned int& map0, const unsigned int& map1, unsigned int& p0, unsigned int& p1);
+void clear_screen();
 
+void clear_screen()
+{
+    lcd.setCursor(0,0);
+    lcd.print(blank_writer);
+    lcd.setCursor(0,1);
+    lcd.print(blank_writer);
+}
+
+void print_intro()
+{
+    lcd.setCursor(0,0);
+    lcd.print("BINARY HERO");
+    lcd.setCursor(0,1);
+    lcd.print("Hit the X's...!!");
+    delay(2000);
+    clear_screen();
+    lcd.setCursor(0,0);
+    lcd.print("by Clemens Lee");
+    lcd.setCursor(0,1);
+    lcd.print(" & Brandon Dang");
+    delay(2000);
+    clear_screen();
+}
 
 void setup() 
 {    
@@ -48,17 +73,16 @@ void setup()
     pinMode(led_pin, OUTPUT);
     lcd.begin(16,2);
     lcd.setRGB(100,100,100);
-    lcd.print("BEGIN GAME 1");
-    delay(1000);
+    //print_intro();
+    lcd.setCursor(0,0);
+    lcd.print("BEGIN GAME 0");
+    delay(2000);
     lcd.setCursor(0,0);
     lcd.print("start!          ");
     delay(100);
-    lcd.setCursor(0,0);
+//    lcd.setCursor(0,0);
 //    lcd.print("count:      ");
-    lcd.setCursor(0,0);
-    lcd.print(blank_writer);//write all blank
-    lcd.setCursor(0,1);
-    lcd.print(blank_writer);
+    clear_screen();
     delay(200);
     map_display();
     delay(30);
@@ -95,32 +119,32 @@ boolean correct_press()
    return (user0==val0 && user1==val1);
 }
 
+void start_delay_beep(int delay_time)
+  {
+   if(start_delay)
+   {
+      for(int i = 0; i < 3; i++)
+      {
+        delay(delay_time);
+        tone(buzz_pin, 1900, 200);
+      }
+      delay(delay_time);
+      tone(buzz_pin, 3000, 200);
+    }
+}
+
 void loop() 
 {
-  if(start_delay)
-  {
-    delay(400);
-    tone(buzz_pin, 1900, 200); 
-    delay(400);
-    tone(buzz_pin, 1900, 200);
-    delay(400);
-    tone(buzz_pin, 1900, 200);
-    delay(400);
-    tone(buzz_pin, 3000, 200);
-  }
+  start_delay_beep(400);
   ++loop_count;
   button_state = digitalRead(button_pin);
   touch_state = digitalRead(touch_pin);
   if(button_state == HIGH)
-  {
     user1 = 1;
-  }
   else
     user1 = 0;
   if(touch_state == HIGH)
-  {
     user0 = 1;
-  }
   else
     user0 = 0;
 //  lcd.setCursor(0,0);
@@ -132,7 +156,7 @@ void loop()
 //  delay(100);
   if(start_delay)
   {
-    delay(300);
+    delay(10);
     start_delay = false;
   }
   if(correct_press())
@@ -147,29 +171,55 @@ void loop()
     map_display();
   }
   
-  if(ptr0>=ptr_max)
+  if(ptr0>=ptr_max)//won this level!
   {
-    lcd.setCursor(0,0);
-    lcd.print(blank_writer);
-    lcd.print(blank_writer);
+    clear_screen();
     lcd.setCursor(0,0);
     lcd.print("DONE! YOU WON!!");
+    /*
+    ::insert level up tune::
+    */
     lcd.setCursor(0,1);
     lcd.print(blank_writer);
-    while(true){}
+    ++level;//increase level
+    //set pointers back to 0
+    ptr0 = 0;
+    ptr1 = 0;
+    if(level > max_level)//you beat the game
+    {
+       clear_screen();
+       lcd.setCursor(0,0);
+       lcd.print("GAME CHAMP!"); 
+       while(true)
+       {
+         /*
+         champion of game tune
+         */
+       }
+    }
+    delay(1000);
+    clear_screen();
+    lcd.setCursor(0,0);
+    lcd.print("Starting Lvl: ");
+    lcd.print(level);
+    delay(500);
+    start_delay = true;
   }
   if(loop_count>=rxn_time[level] && !good)//lost
   {
-    lcd.setCursor(0,0);
-    lcd.print(blank_writer);
-    lcd.setCursor(0,1);
-    lcd.print(blank_writer);
+    clear_screen();
     lcd.setCursor(0,0);
     lcd.print("GAME OVER");
+    /*
+    :: insert game over tune::
+    */
     //lcd.print(ptr0); //used to figure out which index it failed at
     lcd.setCursor(0,1);
     lcd.print("TRY AGAIN");
-    while(true){}
+    level = 0;
+    while(true){
+      lcd.setRGB(200,0,0);
+    }
   }
   else if(loop_count>=rxn_time[level] && good)//continue
   {
