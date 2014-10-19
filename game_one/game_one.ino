@@ -121,7 +121,7 @@ boolean correct_press()
      lcd.print("~~~~~~"); 
      delay(900);
    }*/
-   //delay(100);
+   delay(80);
    return (user0==val0 && user1==val1);
 }
 
