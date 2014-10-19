@@ -3,6 +3,7 @@
 #include "/hackTX14/rgb_lcd.cpp"
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
 
 rgb_lcd lcd;
 
@@ -16,7 +17,7 @@ const int touch_pin = 4;
 const int buzz_pin = 8;
 const char blank_writer[17] = "                ";
 int level;
-const int max_level = 1; //index count
+const int max_level = 0; //index count
 const int rxn_time[6] = {30, 29, 27, 24, 19, 13};//time to react, decreases as levels go up
 
 int button_state = 0;
@@ -35,11 +36,20 @@ unsigned int ptr_max = 21; //when pointer gets to index 15 we know that is the l
 int val0, val1, user0, user1, loop_count;
 boolean good, start_delay;
 boolean need_setup = true;
+boolean cold_start = true;
 
 boolean correct_press();//checks to see if the user pressed the correct buttons
 void map_display();//const unsigned int& map0, const unsigned int& map1, unsigned int& p0, unsigned int& p1);
 void clear_screen();
 void our_setup();
+
+//C io stuff
+FILE *f;
+f = fopen("/home/root/score.txt", "w+");
+/fprintf(f, "score: %d", 8);
+
+system("echo 8 > /home/root/score.txt");
+
 
 void clear_screen()
 {
@@ -111,7 +121,11 @@ void our_setup()
     pinMode(led_pin, OUTPUT);
     lcd.begin(16,2);
     
-    temp_check();
+    if(cold_start)
+    {
+      temp_check();
+      cold_start = false;
+    }
 
     lcd.setRGB(100,100,100);    
     val0 = 0;
@@ -126,6 +140,7 @@ void our_setup()
     level = 0;
     
     //print_intro();
+    clear_screen();
     lcd.setCursor(0,0);
     lcd.print("BEGIN GAME 0");
     delay(2000);
@@ -268,6 +283,7 @@ void our_loop()
     
     if(level > max_level)//you beat the game
     {
+       level = 0;
        win_all();
        while(true)
        {

@@ -2,6 +2,7 @@
 #include "/hackTX14/rgb_lcd.h"
 #include "/hackTX14/rgb_lcd.cpp"
 #include <stdio.h>
+#include <math.h>
 
 rgb_lcd lcd;
 
@@ -15,7 +16,7 @@ const int touch_pin = 4;
 const int buzz_pin = 8;
 const char blank_writer[17] = "                ";
 int level;
-const int max_level = 1; //index count
+int max_level = 1; //index count
 const int rxn_time[6] = {30, 29, 27, 24, 19, 13};//time to react, decreases as levels go up
 
 int button_state = 0;
@@ -34,11 +35,66 @@ unsigned int ptr_max = 21; //when pointer gets to index 15 we know that is the l
 int val0, val1, user0, user1, loop_count;
 boolean good, start_delay;
 boolean need_setup = true;
+boolean cold_start = true;
 
 boolean correct_press();//checks to see if the user pressed the correct buttons
 void map_display();//const unsigned int& map0, const unsigned int& map1, unsigned int& p0, unsigned int& p1);
 void clear_screen();
 void our_setup();
+
+void choose_level()
+{
+  while(true)
+  {
+   clear_screen();
+   lcd.setCursor(0,0);
+   lcd.print("click now for");
+   lcd.setCursor(0,1);
+   lcd.print("1 lvl game");
+   delay(1500);
+   if(HIGH == digitalRead(button_pin) || HIGH == digitalRead(touch_pin))
+   {
+     max_level = 0;
+     clear_screen();
+     lcd.setCursor(0,0);
+     lcd.print("1 level game");
+     delay(800);
+     return;
+   }
+   //2 levels
+   clear_screen();
+   lcd.setCursor(0,0);
+   lcd.print("click now for");
+   lcd.setCursor(0,1);
+   lcd.print("2 lvl game");
+   delay(1500);
+   if(HIGH == digitalRead(button_pin) || HIGH == digitalRead(touch_pin))
+   {
+     max_level = 1;
+     clear_screen();
+     lcd.setCursor(0,0);
+     lcd.print("2 level game");
+     delay(800);
+     return;
+   }
+   //6 levels
+   clear_screen();
+   lcd.setCursor(0,0);
+   lcd.print("click now for");
+   lcd.setCursor(0,1);
+   lcd.print("6 lvl game");
+   delay(1500);
+   if(HIGH == digitalRead(button_pin) || HIGH == digitalRead(touch_pin))
+   {
+     max_level = 5;
+     clear_screen();
+     lcd.setCursor(0,0);
+     lcd.print("6 level game");
+     delay(800);
+     return;
+   }
+  }
+}
 
 void clear_screen()
 {
@@ -68,6 +124,39 @@ void setup()
 {    
 }
 
+boolean temp_check()
+{
+   lcd.setRGB(0,40, 180);
+   int a;
+   float temp = 0;
+   int B = 3975;
+   float resistance;
+   lcd.setCursor(0,0);
+   lcd.print("Temp Check");
+   lcd.setCursor(0,1);
+   lcd.print("un-human temp");
+   delay(800);
+   while(temp<29)
+   {
+     a = analogRead(0);
+     resistance=(float)(1023-a)*10000/a; //get the resistance of the sensor;
+     temp=1/(log(resistance/10000)/B+1/298.15)-273.15;//convert to temperature via datasheet ;
+     delay(500);
+     clear_screen();
+     lcd.setCursor(0,0);
+     lcd.print("too cold...");
+     lcd.setCursor(0,1);
+     lcd.print("you aren't human");
+     delay(300);
+     if(temp>=29)
+       break;
+   }
+   clear_screen();
+   lcd.setCursor(0,0);
+   lcd.print("you seem human");
+   delay(750);
+}
+
 //our_setup
 void our_setup()
 {
@@ -76,8 +165,15 @@ void our_setup()
     pinMode(buzz_pin, OUTPUT);
     pinMode(led_pin, OUTPUT);
     lcd.begin(16,2);
-    lcd.setRGB(100,100,100);
     
+    if(cold_start)
+    {
+      print_intro();
+      temp_check();
+      cold_start = false;
+    }
+    choose_level();
+    lcd.setRGB(100,100,100);    
     val0 = 0;
     val1 = 0;
     user0 = 0;
@@ -89,7 +185,7 @@ void our_setup()
     ptr1 = 0;
     level = 0;
     
-    //print_intro();
+    clear_screen();
     lcd.setCursor(0,0);
     lcd.print("BEGIN GAME 0");
     delay(2000);
@@ -289,7 +385,7 @@ void our_loop()
       delay(1000);
       clear_screen();
       lcd.setCursor(0,0);
-      lcd.print("press button");
+      lcd.print("hold button");
       lcd.setCursor(0,1);
       lcd.print("to play again");
       if(digitalRead(button_pin) || digitalRead(touch_pin))
