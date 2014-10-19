@@ -1,0 +1,4 @@
+import facebook
+token = CAACEdEose0cBAOVZByPrFfY5MELgvdBY3Ord2ffkL9IvacSqPO49XrKINrb2HwfSyyPoeUfmJhec8sGXlUWh5riANldEOseWZAAmzA71Au06ClocAI6ksnZBM3H1FZCdMZCvKNhlesdYkLRyzveqqiAw9DIQLZCkOQQZBKZCGgpRm64aWZBDJp5y3xxP0ERDxkEmq0dK3su86URSh7KPRQiSb
+graph = facebook.GraphAPI(token)
+graph.put_object("me", "feed", message="auto writing on my wall")

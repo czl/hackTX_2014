@@ -2,6 +2,7 @@
 #include "/hackTX14/rgb_lcd.h"
 #include "/hackTX14/rgb_lcd.cpp"
 #include <stdio.h>
+#include <math.h>
 
 rgb_lcd lcd;
 
@@ -68,6 +69,39 @@ void setup()
 {    
 }
 
+boolean temp_check()
+{
+   lcd.setRGB(0,40, 180);
+   int a;
+   float temp = 0;
+   int B = 3975;
+   float resistance;
+   lcd.setCursor(0,0);
+   lcd.print("Temp Check");
+   lcd.setCursor(0,1);
+   lcd.print("un-human temp");
+   delay(800);
+   while(temp<29)
+   {
+     a = analogRead(0);
+     resistance=(float)(1023-a)*10000/a; //get the resistance of the sensor;
+     temp=1/(log(resistance/10000)/B+1/298.15)-273.15;//convert to temperature via datasheet ;
+     delay(500);
+     clear_screen();
+     lcd.setCursor(0,0);
+     lcd.print("too cold...");
+     lcd.setCursor(0,1);
+     lcd.print("you aren't human");
+     delay(300);
+     if(temp>=29)
+       break;
+   }
+   clear_screen();
+   lcd.setCursor(0,0);
+   lcd.print("you seem human");
+   delay(750);
+}
+
 //our_setup
 void our_setup()
 {
@@ -76,8 +110,10 @@ void our_setup()
     pinMode(buzz_pin, OUTPUT);
     pinMode(led_pin, OUTPUT);
     lcd.begin(16,2);
-    lcd.setRGB(100,100,100);
     
+    temp_check();
+
+    lcd.setRGB(100,100,100);    
     val0 = 0;
     val1 = 0;
     user0 = 0;
@@ -289,7 +325,7 @@ void our_loop()
       delay(1000);
       clear_screen();
       lcd.setCursor(0,0);
-      lcd.print("press button");
+      lcd.print("hold button");
       lcd.setCursor(0,1);
       lcd.print("to play again");
       if(digitalRead(button_pin) || digitalRead(touch_pin))
