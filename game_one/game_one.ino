@@ -20,6 +20,13 @@ boolean toggle = false;
 int button_count = 0;
 int hold_time = 0;
 
+const unsigned int map_0[] = {0,1,0,0,1,0,1,1,1,0,0,1,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+const unsigned int map_1[] = {1,0,1,1,0,1,1,1,0,1,1,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+unsigned int ptr0 = 0;
+unsigned int ptr1 = 0;
+
+void map_display();//const unsigned int& map0, const unsigned int& map1, unsigned int& p0, unsigned int& p1);
+
 void setup() 
 {    
     pinMode(button_pin, INPUT);
@@ -40,47 +47,32 @@ void setup()
     lcd.setCursor(0,1);
     lcd.print(blank_writer);
     delay(200);
-//    lcd.print("touch");
+    map_display();
+}
+
+//map display function
+void map_display()//const unsigned int& map0, const unsigned int& map1, unsigned int& p0, unsigned int& p1)
+{
+  lcd.setCursor(0,0);
+  int i = 0;
+  for(;i<16;++i)
+  {
+    lcd.setCursor(i,0);
+    if(map_0[i])
+      lcd.print("X"); 
+    else
+      lcd.print(" ");
+    lcd.setCursor(i,1);
+    if(map_1[i])
+      lcd.print("X");
+    else
+      lcd.print(" ");
+  } 
 }
 
 void loop() 
 {
-    //delay(150);
     
-    lcd.setCursor(0,1);
-    lcd.print(button_count);
-    button_state = digitalRead(button_pin);
-    touch_state = digitalRead(touch_pin);
-    
-    if(touch_state == HIGH){
-      lcd.setCursor(9,0);
-      lcd.print("on   ");
-    }
-    else{
-     lcd.setCursor(9,0);
-     lcd.print("off   ");  
-    }
-    
-//    if(button_state == LOW){
-//      while(digitalRead(button_pin) == LOW){}       
-//    }
-    if(button_state == HIGH){
-      toggle = !toggle;
-      ++button_count;
-      hold_time = 0;
-//      while(digitalRead(button_pin) == HIGH){ //sample is in microseconds, b/c 1MHz processor
-//        ++hold_time;//counts how long we have held it in ms
-//      };
-    }  
-    lcd.setCursor(6,1);
-    lcd.print("          ");
-    lcd.setCursor(6,1);
-    lcd.print(hold_time);  
-    if(toggle)
-      digitalWrite(led_pin, HIGH);
-    else
-      digitalWrite(led_pin, LOW);
-    delay(10); //delay in MS
 }
 
 /*********************************************************************************************************
