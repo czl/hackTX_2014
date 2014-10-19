@@ -1,6 +1,7 @@
 #include <Wire.h>
 #include "/hackTX14/rgb_lcd.h"
 #include "/hackTX14/rgb_lcd.cpp"
+#include <stdio.h>
 
 rgb_lcd lcd;
 
@@ -14,32 +15,31 @@ const int touch_pin = 4;
 const int buzz_pin = 8;
 const char blank_writer[17] = "                ";
 int level = 0;
-int max_level = 5;
+int max_level = 1; //index count
 const int rxn_time[6] = {30, 29, 27, 24, 19, 13};//time to react, decreases as levels go up
+
 
 int button_state = 0;
 int touch_state = 0;
+/*
 boolean toggle = false;
 int button_count = 0;
 int hold_time = 0;
+*/
 
 const unsigned int map_0[] = {0,0,1,0,0,1,0,1,1,1,0,0,1,0,1,1,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 const unsigned int map_1[] = {1,0,0,1,1,0,1,1,1,0,1,1,0,1,0,1,1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-unsigned int ptr0 = 0;
-unsigned int ptr1 = 0;
+unsigned int ptr0, ptr1;
 unsigned int ptr_max = 21; //when pointer gets to index 15 we know that is the last part of map
 
-int val0 = 0;
-int val1 = 0;
-int user0 = 0;
-int user1 = 0;
-boolean good = false;
-int loop_count = 0;
-boolean start_delay = true;
+int val0, val1, user0, user1, loop_count;
+boolean good, start_delay;
+boolean need_setup = true;
 
 boolean correct_press();//checks to see if the user pressed the correct buttons
 void map_display();//const unsigned int& map0, const unsigned int& map1, unsigned int& p0, unsigned int& p1);
 void clear_screen();
+void our_setup();
 
 void clear_screen()
 {
@@ -67,12 +67,29 @@ void print_intro()
 
 void setup() 
 {    
+}
+
+//our_setup
+void our_setup()
+{
     pinMode(button_pin, INPUT);
     pinMode(touch_pin, INPUT);
     pinMode(buzz_pin, OUTPUT);
     pinMode(led_pin, OUTPUT);
     lcd.begin(16,2);
     lcd.setRGB(100,100,100);
+    
+    val0 = 0;
+    val1 = 0;
+    user0 = 0;
+    user1 = 0;
+    good = false;
+    loop_count = 0;
+    start_delay = true;
+    ptr0 = 0;
+    ptr1 = 0;
+    level = 0;
+    
     //print_intro();
     lcd.setCursor(0,0);
     lcd.print("BEGIN GAME 0");
@@ -85,7 +102,7 @@ void setup()
     clear_screen();
     delay(200);
     map_display();
-    delay(30);
+    delay(30);  
 }
 
 //map display function
@@ -133,7 +150,7 @@ void start_delay_beep(int delay_time)
     }
 }
 
-void loop() 
+void our_loop()
 {
   start_delay_beep(400);
   ++loop_count;
@@ -187,11 +204,40 @@ void loop()
     ptr1 = 0;
     if(level > max_level)//you beat the game
     {
-       clear_screen();
-       lcd.setCursor(0,0);
-       lcd.print("GAME CHAMP!"); 
        while(true)
        {
+         clear_screen();
+         lcd.setRGB(0,255,0);
+         lcd.setCursor(0,0);
+         lcd.print("GAME CHAMP!"); 
+         if(digitalRead(button_pin) || digitalRead(touch_pin))
+         {
+           need_setup = true;
+           break;
+         }
+         delay(1000);
+         clear_screen();
+         lcd.setCursor(0,0);
+         lcd.print("press button");
+         lcd.setCursor(0,1);
+         lcd.print("to play again");
+         if(digitalRead(button_pin) || digitalRead(touch_pin))
+         {
+           need_setup = true;
+           break;
+         }
+         delay(500);
+         if(digitalRead(button_pin) || digitalRead(touch_pin))
+         {
+           need_setup = true;
+           break;
+         }
+         delay(500);
+         if(digitalRead(button_pin) || digitalRead(touch_pin))
+         {
+           need_setup = true;
+           break;
+         }
          /*
          champion of game tune
          */
@@ -205,21 +251,39 @@ void loop()
     delay(500);
     start_delay = true;
   }
-  if(loop_count>=rxn_time[level] && !good)//lost
+  else if(loop_count>=rxn_time[level] && !good)//lost
   {
-    clear_screen();
-    lcd.setCursor(0,0);
-    lcd.print("GAME OVER");
+    lcd.setRGB(200,0,0);//red bg
+    while(true)
+    {
+      clear_screen();
+      lcd.setCursor(0,0);
+      lcd.print("GAME OVER");
+      delay(1000);
+      //::game over tune::
+      clear_screen();
+      lcd.setCursor(0,0);
+      lcd.print("press button");
+      lcd.setCursor(0,1);
+      lcd.print("to play again");
+      if(digitalRead(button_pin) || digitalRead(touch_pin))
+      {
+        need_setup = true;
+        break;
+      }
+      delay(500);
+      if(digitalRead(button_pin) || digitalRead(touch_pin))
+      {
+        need_setup = true;
+        break;
+      }
+      delay(500);
+    }
+    
     /*
     :: insert game over tune::
     */
     //lcd.print(ptr0); //used to figure out which index it failed at
-    lcd.setCursor(0,1);
-    lcd.print("TRY AGAIN");
-    level = 0;
-    while(true){
-      lcd.setRGB(200,0,0);
-    }
   }
   else if(loop_count>=rxn_time[level] && good)//continue
   {
@@ -228,7 +292,17 @@ void loop()
     loop_count = 0;
     good = false;
   }
-  delay(10);
+  delay(10); 
+}
+
+void loop() 
+{
+  if(need_setup)
+  {
+    our_setup();
+    need_setup = false;
+  }
+  our_loop();
 }
 
 /*********************************************************************************************************
