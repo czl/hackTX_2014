@@ -23,11 +23,11 @@ boolean toggle = false;
 int button_count = 0;
 int hold_time = 0;
 
-const unsigned int map_0[] = {0,0,1,0,0,1,0,1,1,1,0,0,1,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-const unsigned int map_1[] = {1,0,0,1,1,0,1,1,1,0,1,1,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+const unsigned int map_0[] = {0,0,1,0,0,1,0,1,1,1,0,0,1,0,1,1,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+const unsigned int map_1[] = {1,0,0,1,1,0,1,1,1,0,1,1,0,1,0,1,1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 unsigned int ptr0 = 0;
 unsigned int ptr1 = 0;
-unsigned int ptr_max = 16; //when pointer gets to index 15 we know that is the last part of map
+unsigned int ptr_max = 21; //when pointer gets to index 15 we know that is the last part of map
 
 int val0 = 0;
 int val1 = 0;
