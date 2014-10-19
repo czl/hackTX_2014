@@ -12,7 +12,8 @@ const int button_pin = 3; //
 const int led_pin = 13;
 const int touch_pin = 4;
 const int buzz_pin = 8;
-const char blank_writer[16] = "               ";
+const char blank_writer[17] = "                ";
+int rxn_time = 30;//time to react, decreases as levels go up
 
 int button_state = 0;
 int touch_state = 0;
@@ -30,6 +31,9 @@ int val0 = 0;
 int val1 = 0;
 int user0 = 0;
 int user1 = 0;
+boolean good = false;
+int loop_count = 0;
+boolean start_delay = true;
 
 boolean correct_press();//checks to see if the user pressed the correct buttons
 void map_display();//const unsigned int& map0, const unsigned int& map1, unsigned int& p0, unsigned int& p1);
@@ -56,7 +60,7 @@ void setup()
     lcd.print(blank_writer);
     delay(200);
     map_display();
-    delay(500);
+    delay(30);
 }
 
 //map display function
@@ -67,20 +71,6 @@ void map_display()//const unsigned int& map0, const unsigned int& map1, unsigned
   //setting val0 and val1
   val0 = map_0[ptr0];
   val1 = map_1[ptr1];
-  /*lcd.setCursor(0,0);
-  lcd.print("val0:");
-  lcd.print(val0);
-  lcd.setCursor(0,1);
-  lcd.print("val1:");
-  lcd.print(val1);
-  delay(700);
-  lcd.setCursor(0,0);
-  lcd.print("usr0:");
-  lcd.print(user0);
-  lcd.setCursor(0,1);
-  lcd.print("usr1:");
-  lcd.print(user1);
-  delay(700);*/
   //displaying map
   for(;i<16;++i)
   {
@@ -100,63 +90,55 @@ void map_display()//const unsigned int& map0, const unsigned int& map1, unsigned
 
 boolean correct_press()
 {
-  /*lcd.setCursor(0,0);
-  lcd.print(user0);
-  lcd.setCursor(0,1);
-  lcd.print(user1);
-  delay(700);
-   if(user0==val0 && user1==val1)
-   {
-     tone(buzz_pin, 1500, 400);
-     lcd.setCursor(0,0);
-     lcd.print("CORRECT");
-     delay(900);
-   }
-   else{
-     //tone(buzz_pin, 2000, 300);
-     //tone(buzz_pin, 400, 400);
-     lcd.setCursor(0,0);
-     lcd.print("~~~~~~");
-     lcd.setCursor(0,1);
-     lcd.print("~~~~~~"); 
-     delay(900);
-   }*/
-   delay(80);
+//   delay(80);
    return (user0==val0 && user1==val1);
 }
 
 void loop() 
 {
+  if(start_delay)
+  {
+    delay(400);
+    tone(buzz_pin, 1900, 200); 
+    delay(400);
+    tone(buzz_pin, 1900, 200);
+    delay(400);
+    tone(buzz_pin, 1900, 200);
+    delay(400);
+    tone(buzz_pin, 3000, 200);
+  }
+  ++loop_count;
   button_state = digitalRead(button_pin);
   touch_state = digitalRead(touch_pin);
-//  lcd.setCursor(0,0);
-//  lcd.print(touch_state);
-//  lcd.setCursor(0,1);
-//  lcd.print(button_state);
-//  delay(100);
-//  tone(buzz_pin, 900, 40);
   if(button_state == HIGH)
   {
     user1 = 1;
-    /*tone(buzz_pin, 900, 200);
-    lcd.setCursor(0,1);
-    lcd.print("HIHIHIHI");*/
   }
   else
     user1 = 0;
   if(touch_state == HIGH)
   {
     user0 = 1;
-    /*tone(buzz_pin, 1800, 40);
-    lcd.setCursor(0,0);
-    lcd.print("00000");*/
   }
   else
     user0 = 0;
+//  lcd.setCursor(0,0);
+//  lcd.print("user0:");
+//  lcd.print(user0);
+//  lcd.setCursor(0,1);
+//  lcd.print("user1:");
+//  lcd.print(user1);
+//  delay(100);
+  if(start_delay)
+  {
+    delay(300);
+    start_delay = false;
+  }
   if(correct_press())
   {
-    ++ptr0;
-    ++ptr1; 
+    //++ptr0;
+    //++ptr1; 
+    good = true;
   }
   if(ptr0<ptr_max)
   { 
@@ -170,10 +152,30 @@ void loop()
     lcd.print(blank_writer);
     lcd.print(blank_writer);
     lcd.setCursor(0,0);
-    lcd.print("DONE! GAME OVER");
+    lcd.print("DONE! YOU WON!!");
     lcd.setCursor(0,1);
     lcd.print(blank_writer);
     while(true){}
+  }
+  if(loop_count>=rxn_time && !good)//lost
+  {
+    lcd.setCursor(0,0);
+    lcd.print(blank_writer);
+    lcd.setCursor(0,1);
+    lcd.print(blank_writer);
+    lcd.setCursor(0,0);
+    lcd.print("GAME OVER");
+    //lcd.print(ptr0); //used to figure out which index it failed at
+    lcd.setCursor(0,1);
+    lcd.print("TRY AGAIN");
+    while(true){}
+  }
+  else if(loop_count>=rxn_time && good)//continue
+  {
+    ++ptr0;
+    ++ptr1; 
+    loop_count = 0;
+    good = false;
   }
   delay(10);
 }
