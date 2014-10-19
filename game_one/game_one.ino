@@ -13,7 +13,8 @@ const int led_pin = 13;
 const int touch_pin = 4;
 const int buzz_pin = 8;
 const char blank_writer[17] = "                ";
-int rxn_time = 30;//time to react, decreases as levels go up
+int level = 0;
+const int rxn_time[6] = {30, 29, 27, 24, 19};//time to react, decreases as levels go up
 
 int button_state = 0;
 int touch_state = 0;
@@ -21,8 +22,8 @@ boolean toggle = false;
 int button_count = 0;
 int hold_time = 0;
 
-const unsigned int map_0[] = {0,1,0,0,1,0,1,1,1,0,0,1,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-const unsigned int map_1[] = {1,0,1,1,0,1,1,1,0,1,1,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+const unsigned int map_0[] = {0,0,1,0,0,1,0,1,1,1,0,0,1,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+const unsigned int map_1[] = {1,0,0,1,1,0,1,1,1,0,1,1,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 unsigned int ptr0 = 0;
 unsigned int ptr1 = 0;
 unsigned int ptr_max = 16; //when pointer gets to index 15 we know that is the last part of map
@@ -157,7 +158,7 @@ void loop()
     lcd.print(blank_writer);
     while(true){}
   }
-  if(loop_count>=rxn_time && !good)//lost
+  if(loop_count>=rxn_time[level] && !good)//lost
   {
     lcd.setCursor(0,0);
     lcd.print(blank_writer);
@@ -170,7 +171,7 @@ void loop()
     lcd.print("TRY AGAIN");
     while(true){}
   }
-  else if(loop_count>=rxn_time && good)//continue
+  else if(loop_count>=rxn_time[level] && good)//continue
   {
     ++ptr0;
     ++ptr1; 
